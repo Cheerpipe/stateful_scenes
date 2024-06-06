@@ -178,7 +178,7 @@ class RestoreOnDeactivate(SwitchEntity, RestoreEntity):
     def __init__(self, scene: StatefulScenes.Scene) -> None:
         """Initialize."""
         self._scene = scene
-        self._name = f"{scene.restore_on_deactivate} Restore On Deactivate"
+        self._name = f"{scene.name} Restore On Deactivate"
         self._attr_unique_id = f"{scene.id}_restore_on_deactivate"
         self._scene.set_restore_on_deactivate(scene.restore_on_deactivate)
         self._is_on = scene.restore_on_deactivate
