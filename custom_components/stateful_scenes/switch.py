@@ -9,12 +9,14 @@ import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.components.switch import PLATFORM_SCHEMA, SwitchEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory
+from homeassistant.const import EntityCategory, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.helpers.restore_state import RestoreEntity
+
 
 from . import StatefulScenes
 from .const import (
@@ -165,7 +167,7 @@ class StatefulSceneSwitch(SwitchEntity):
         self._scene.unregister_callback()
 
 
-class RestoreOnDeactivate(SwitchEntity):
+class RestoreOnDeactivate(SwitchEntity, RestoreEntity):
     """Switch entity to restore the scene on deactivation."""
 
     _attr_name = "Restore On Deactivate"
@@ -173,10 +175,10 @@ class RestoreOnDeactivate(SwitchEntity):
     _attr_should_poll = True
     _attr_assumed_state = True
 
-    def __init__(self, scene: StatefulScenes) -> None:
+    def __init__(self, scene: StatefulScenes.Scene) -> None:
         """Initialize."""
         self._scene = scene
-        self._name = f"{scene.name} Restore On Deactivate"
+        self._name = f"{scene.restore_on_deactivate} Restore On Deactivate"
         self._attr_unique_id = f"{scene.id}_restore_on_deactivate"
         self._scene.set_restore_on_deactivate(scene.restore_on_deactivate)
         self._is_on = scene.restore_on_deactivate
@@ -221,3 +223,10 @@ class RestoreOnDeactivate(SwitchEntity):
         This is the only method that should fetch new data for Home Assistant.
         """
         self._is_on = self._scene.restore_on_deactivate
+
+    async def async_added_to_hass(self):
+        """Handle entity which will be added."""
+        state = await self.async_get_last_state()
+        if not state:
+            return
+        self._is_on = state.state == STATE_ON
