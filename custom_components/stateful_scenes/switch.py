@@ -230,3 +230,4 @@ class RestoreOnDeactivate(SwitchEntity, RestoreEntity):
         if not state:
             return
         self._is_on = state.state == STATE_ON
+        self._scene.set_restore_on_deactivate(self._is_on)
